@@ -1,0 +1,25 @@
+paths:
+  /users:
+    get:
+      summary: Get all users
+      description: This endpoint provides information about all the users in the database.
+      responses:
+        200:
+          description: Successful response
+    post:
+      summary: Create a new user
+      description: Create a new user in the database.
+      responses:
+        201:
+          description: User created successfully
+        400:
+          description: Bad request - Invalid user data
+        500:
+          description: Internal server error
+  /products:
+    get:
+      summary: Get all products
+      description: Get all the products in the database.
+      responses:
+        200:
+          description: Successful response

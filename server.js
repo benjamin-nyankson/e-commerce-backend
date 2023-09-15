@@ -49,12 +49,12 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *         description: Successful response
  */
 
-
 const dbURI = process.env.DB_URL_NEW;
+const port = process.env.PORT;
 mongoose
   .connect(dbURI)
   .then((result) => {
-    app.listen(8000);
+    app.listen(port);
     console.log("Connected to db");
   })
   .catch((err) => {

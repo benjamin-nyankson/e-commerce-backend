@@ -15,7 +15,8 @@ module.exports.products = async (req, res) => {
 };
 
 module.exports.AddtoCart = async (req, res) => {
-  const { unitPrice, item, image, quantity, email, totalPrice } = req.body;
+  const { unitPrice, item, image, quantity, email, totalPrice, itemId } =
+    req.body;
   const carts = new Cart({
     unitPrice,
     item,
@@ -24,42 +25,49 @@ module.exports.AddtoCart = async (req, res) => {
     email,
     totalPrice,
   });
-  const user = await database.usersCollection.findOne({ email: email });
-  let existingItem;
-  let existingPrice;
-  try {
-    user?.cart.forEach((item) => {
-      existingItem = item.item;
-      existingPrice = item.totalPrice;
-    });
 
-    if (item === existingItem && totalPrice === existingPrice) {
-      res.status(404).send(`Item already exist`);
-    } else if (item === existingItem && totalPrice !== existingPrice) {
-      res.status(201).json({ message: "update price" });
+  const items = {
+    unitPrice,
+    item,
+    image,
+    quantity,
+    email,
+    totalPrice,
+    itemId,
+  };
+  // console.log(items)
+  const user = await database.usersCollection.findOne({ email: email });
+  // await database.cartCollection.insertOne({ userId: user._id, ...items })
+  if (!user) {
+    res.status(409).json({ mesage: "User does not exist" });
+  } else {
+    const itemExists = await database.cartCollection
+      .find({ userId: user._id, itemId })
+      .toArray();
+    if (itemExists?.length) {
+      res.status(201).send(`Item already exist`);
     } else {
-      database.usersCollection.updateOne(
-        { _id: user._id },
-        { $push: { cart: carts } }
-      );
-      res.status(201).json({ mesage: "product added successfully" });
+      try {
+        await database.cartCollection.insertOne({ userId: user._id, ...items });
+        res.status(201).json({ mesage: "product added successfully" });
+      } catch (error) {
+        res.status(409).json({ mesage: "cant add" });
+      }
     }
-  } catch (error) {
-    res.status(409).json({ mesage: "cant add" });
   }
 };
 
 module.exports.getCarts = async (req, res) => {
   const { id } = req.query;
   try {
-    const user = await database.usersCollection.findOne({
-      _id: new ObjectID(id),
-    });
+    const user = await database.cartCollection
+      .find({ userId: new ObjectID(id) })
+      .toArray();
+    console.log(user);
     if (!user) {
       return res.status(409).json({ message: "Could not fetch cart" });
     }
-    res.json({ cart: user?.cart });
-    console.log(user);
+    res.json({ cart: user });
   } catch (error) {
     console.log(error);
     res.status(409).json({ message: "Could not fetch cart" });
@@ -69,32 +77,50 @@ module.exports.getCarts = async (req, res) => {
 module.exports.deleteCartItem = async (req, res) => {
   const { userId, itemId } = req.query;
 
+try {
+  const result = await database.cartCollection.findOneAndDelete({
+    userId: new ObjectID(userId),
+    _id:new ObjectID(itemId), 
+  });
+
+  console.log("Item deleted:", result.value);
+  if (result.value) {
+    res.status(200).json({ message: "Item deleted successfully", item: result.value });
+  } else {
+    res.status(404).json({ message: "Item not found" });
+  }
+} catch (error) {
+  console.error("Error deleting item:", error);
+  res.status(500).json({ error: "An error occurred while deleting the item" });
+}
+};
+
+module.exports.PurchaseItem = async (req, res) => {
+  const { userId, itemId } = req.body;
+
   try {
-    const user = await database.usersCollection.findOne({
-      _id: new ObjectID(userId),
-    });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+    // Convert userId and itemId to ObjectId if they are not already
+    const userObjectId = new ObjectID(userId);
+    const itemObjectId = new ObjectID(itemId);
+
+    // Find the item in the cart
+    const userCart = await database.cartCollection
+      .find({ userId: userObjectId, _id: itemObjectId })
+      .toArray();
+
+    if (!userCart.length) {
+      return res.status(404).json("Item not found");
     }
 
-    const itemIndex = user.cart.filter((cartItem) => cartItem._id === itemId);
-
-    if (itemIndex === -1) {
-      return res.status(404).json({ error: "Cart item not found" });
-    }
-
-    user.cart.splice(itemIndex, 1);
-
-    await database.usersCollection.updateOne(
-      { _id: new ObjectID(userId) },
-      { $set: { cart: user.cart } }
+    // Update the item to set the purchased property to true
+    await database.cartCollection.updateOne(
+      { userId: userObjectId, _id: itemObjectId },
+      { $set: { purchased: true } }
     );
 
-    res.status(200).json({ message: "Cart item deleted successfully" });
+    res.status(200).json({ message: "Item marked as purchased" });
   } catch (error) {
-    console.error("Error deleting cart item:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while deleting the cart item" });
+    console.error("Error purchasing item:", error);
+    res.status(500).json({ error: "An error occurred while purchasing the item" });
   }
 };

@@ -6,4 +6,5 @@ productRoute.get("/products", products.products);
 productRoute.post("/addtocart", products.AddtoCart);
 productRoute.get("/cart", products.getCarts);
 productRoute.delete("/delete/cartItem", products.deleteCartItem);
+productRoute.post("/purchase", products.PurchaseItem);
 module.exports = productRoute;

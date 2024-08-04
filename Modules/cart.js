@@ -26,6 +26,14 @@ const cartSchema = Schema({
     type: String,
     required: true,
   },
+  itemId: {
+    type: String,
+    required: true,
+  },
+  userId:{
+    type: String,
+    required: true,
+  }
 });
 
 const Cart = mongoose.model("cart", cartSchema);

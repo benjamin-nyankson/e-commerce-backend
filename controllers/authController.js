@@ -175,7 +175,7 @@ module.exports.login = async (req, res) => {
       .json({ message: "Login success", data: { accessToken, refreshToken } });
   } catch (error) {
     console.error("Error during login:", error);
-    res.status(500).json({ message: "Login failed", error: error.message });
+    res.status(500).send("Login failed");
   }
 };
 

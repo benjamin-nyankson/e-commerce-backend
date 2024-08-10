@@ -1,0 +1,22 @@
+2024-08-07T13:34:55.439Z [error]: Expected double-quoted property name in JSON at position 262 - SyntaxError: Expected double-quoted property name in JSON at position 262
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\body-parser\lib\types\json.js:89:19)
+    at C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\raw-body\index.js:231:16)
+    at done (C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\raw-body\index.js:220:7)
+    at IncomingMessage.onEnd (C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\raw-body\index.js:280:7)
+    at IncomingMessage.emit (node:events:519:28)
+    at endReadableNT (node:internal/streams/readable:1696:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+2024-08-07T13:35:15.326Z [error]: Expected double-quoted property name in JSON at position 263 - SyntaxError: Expected double-quoted property name in JSON at position 263
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\body-parser\lib\types\json.js:89:19)
+    at C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\raw-body\index.js:231:16)
+    at done (C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\raw-body\index.js:220:7)
+    at IncomingMessage.onEnd (C:\Users\BenjaminNyankson\Downloads\Benjamin\Benji\Backend\e-commerce-backend\node_modules\raw-body\index.js:280:7)
+    at IncomingMessage.emit (node:events:519:28)
+    at endReadableNT (node:internal/streams/readable:1696:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)

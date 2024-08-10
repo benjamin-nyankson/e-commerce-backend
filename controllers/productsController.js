@@ -15,7 +15,7 @@ module.exports.products = async (req, res) => {
 };
 
 module.exports.AddtoCart = async (req, res) => {
-  const { unitPrice, item, image, quantity, email, totalPrice, itemId } =
+  const { unitPrice, item, image, quantity, email, totalPrice, itemId, discountPercentage } =
     req.body;
   const carts = new Cart({
     unitPrice,
@@ -34,6 +34,7 @@ module.exports.AddtoCart = async (req, res) => {
     email,
     totalPrice,
     itemId,
+    discountPercentage
   };
   // console.log(items)
   const user = await database.usersCollection.findOne({ email: email });
@@ -56,6 +57,58 @@ module.exports.AddtoCart = async (req, res) => {
     }
   }
 };
+
+module.exports.addBulk = async (req, res) => {
+  const { email, items } = req.body;
+console.log("i will add bulk")
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ message: "Items must be a non-empty array" });
+  }
+
+  const user = await database.usersCollection.findOne({ email: email });
+  if (!user) {
+    return res.status(409).json({ message: "User does not exist" });
+  }
+
+  let addedItems = [];
+  let existingItems = [];
+
+  for (const item of items) {
+    const { unitPrice, item: itemName, image, quantity, totalPrice, itemId, discountPercentage } = item;
+
+    const itemExists = await database.cartCollection
+      .find({ userId: user._id, itemId })
+      .toArray();
+
+    if (itemExists.length) {
+      existingItems.push(itemId);
+    } else {
+      try {
+        await database.cartCollection.insertOne({
+          userId: user._id,
+          unitPrice,
+          item: itemName,
+          image,
+          quantity,
+          email,
+          totalPrice,
+          itemId,
+          discountPercentage
+        });
+        addedItems.push(itemId);
+      } catch (error) {
+        return res.status(500).json({ message: `Error adding item ${itemId}`, error });
+      }
+    }
+  }
+
+  res.status(201).json({
+    message: "Process completed",
+    addedItems,
+    existingItems,
+  });
+};
+
 
 module.exports.getCarts = async (req, res) => {
   const { id } = req.query;

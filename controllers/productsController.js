@@ -15,16 +15,7 @@ module.exports.products = async (req, res) => {
 };
 
 module.exports.AddtoCart = async (req, res) => {
-  const { unitPrice, item, image, quantity, email, totalPrice, itemId, discountPercentage } =
-    req.body;
-  const carts = new Cart({
-    unitPrice,
-    item,
-    image,
-    quantity,
-    email,
-    totalPrice,
-  });
+  const { unitPrice, item, image, quantity, email, totalPrice, itemId, discountPercentage } = req.body;
 
   const items = {
     unitPrice,
@@ -34,29 +25,41 @@ module.exports.AddtoCart = async (req, res) => {
     email,
     totalPrice,
     itemId,
-    discountPercentage
+    discountPercentage,
   };
-  // console.log(items)
+
   const user = await database.usersCollection.findOne({ email: email });
-  // await database.cartCollection.insertOne({ userId: user._id, ...items })
+
   if (!user) {
-    res.status(409).json({ mesage: "User does not exist" });
+    return res.status(409).json({ message: "User does not exist" });
+  }
+
+  const existingItem = await database.cartCollection.findOne({ userId: user._id, itemId });
+
+  if (existingItem) {
+    // Calculate the new quantity and total price
+    const newQuantity = existingItem.quantity + quantity;
+    const newTotalPrice = existingItem.totalPrice + totalPrice;
+
+    try {
+      await database.cartCollection.updateOne(
+        { userId: user._id, itemId },
+        { $set: { quantity: newQuantity, totalPrice: newTotalPrice } }
+      );
+      return res.status(200).json({ message: "Product updated successfully" });
+    } catch (error) {
+      return res.status(409).json({ message: "Unable to update product" });
+    }
   } else {
-    const itemExists = await database.cartCollection
-      .find({ userId: user._id, itemId })
-      .toArray();
-    if (itemExists?.length) {
-      res.status(201).send(`Item already exist`);
-    } else {
-      try {
-        await database.cartCollection.insertOne({ userId: user._id, ...items });
-        res.status(201).json({ mesage: "product added successfully" });
-      } catch (error) {
-        res.status(409).json({ mesage: "cant add" });
-      }
+    try {
+      await database.cartCollection.insertOne({ userId: user._id, ...items });
+      return res.status(201).json({ message: "Product added successfully" });
+    } catch (error) {
+      return res.status(409).json({ message: "Unable to add product" });
     }
   }
 };
+
 
 module.exports.addBulk = async (req, res) => {
   const { email, items } = req.body;
